@@ -1,20 +1,45 @@
 const getColumn = require('./gameLogic').getColumn;
 
 var request = require('request');
+const HOST = 'http://localhost:8080';
+//const HOST = 'https://connect-four-challenge.herokuapp.com';
 
-const playerId = '4winz';
+const playerId = process.argv[2] || '4winz';
+const timeout = 50;
 
-function poll(gameId) {
+function pollJoinGame() {
+  return new Promise((resolve, reject) => {
+    function requestJoin() {
+      request.post(
+        `${HOST}/api/v1/players/join`,
+        { json: { playerId } },
+        (error, response, body) => {
+          if (error) {
+            reject(error);
+          } else if (body.gameId) {
+            resolve(body);
+          } else {
+            setTimeout(requestJoin, timeout);
+          }
+        }
+      );
+    }
+
+    requestJoin();
+  })
+}
+
+function pollShouldPlay(gameId) {
   return new Promise((resolve) => {
     function requestGameState() {
-      request.get(`http://localhost:8080/api/v1/players/games/${gameId}`,
+      request.get(`${HOST}/api/v1/players/games/${gameId}`,
         (error, response, body) => {
           const parsedBody = JSON.parse(body);
 
-          if (parsedBody.currentPlayerId === playerId) {
+          if (parsedBody.currentPlayerId === playerId || parsedBody.finished) {
             resolve(parsedBody);
           } else {
-            setTimeout(requestGameState, 250);
+            setTimeout(requestGameState, timeout);
           }
         });
     }
@@ -27,7 +52,7 @@ function dropDisc(gameId, column) {
   return new Promise((resolve) => {
     request
       .post(
-        `http://localhost:8080/api/v1/players/games/${gameId}`,
+        `${HOST}/api/v1/players/games/${gameId}`,
         { json: { playerId, column } },
         (serverResponse) => resolve(JSON.parse(serverResponse))
       );
@@ -35,9 +60,10 @@ function dropDisc(gameId, column) {
 }
 
 function makeMoveWhenReady(gameId) {
-  return poll(gameId)
+  return pollShouldPlay(gameId)
     .then((serverResponse) => {
-      if (serverResponse.finished) resolve('finished');
+      if (serverResponse.finished) return 'finished';
+      console.log('making move');
 
       const { disc } = serverResponse.players.find(player => player.playerId === playerId);
       const { board } = serverResponse;
@@ -49,15 +75,22 @@ function makeMoveWhenReady(gameId) {
     });
 }
 
-request.post(
-  'http://localhost:8080/api/v1/players/join',
-  { json: { playerId } },
-  function (error, response, body) {
-    if (error) console.error('SHIT');
+function playGame() {
+  return pollJoinGame()
+    .then(({ gameId }) => {
+      console.log(`joining game: ${gameId}`);
+      return makeMoveWhenReady(gameId);
+    });
+}
 
-    const { gameId } = body;
-    makeMoveWhenReady(gameId)
-      .then(() => process.exit())
-      .catch(console.error);
-  }
-);
+playGame()
+  .then(playGame)
+  .then(playGame)
+  .then(playGame)
+  .then(playGame)
+  .then(playGame)
+  .then(playGame)
+  .then(playGame)
+  .then(playGame)
+  .then(playGame)
+  .catch(console.error);
