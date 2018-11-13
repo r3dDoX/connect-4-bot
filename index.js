@@ -7,15 +7,16 @@ const playerId = '4winz';
 function poll(gameId) {
   return new Promise((resolve) => {
     function requestGameState() {
-      request.get(`http://localhost:8080/api/v1/players/games/${gameId}`, (error, response, body) => {
-        const parsedBody = JSON.parse(body);
+      request.get(`http://localhost:8080/api/v1/players/games/${gameId}`,
+        (error, response, body) => {
+          const parsedBody = JSON.parse(body);
 
-        if (parsedBody.currentPlayerId === playerId) {
-          resolve(parsedBody);
-        } else {
-          setTimeout(requestGameState, 250);
-        }
-      });
+          if (parsedBody.currentPlayerId === playerId) {
+            resolve(parsedBody);
+          } else {
+            setTimeout(requestGameState, 250);
+          }
+        });
     }
 
     requestGameState();
@@ -56,7 +57,7 @@ request.post(
 
     const { gameId } = body;
     makeMoveWhenReady(gameId)
-      .then(console.log)
+      .then(() => process.exit())
       .catch(console.error);
   }
 );
