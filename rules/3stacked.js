@@ -1,6 +1,6 @@
 module.exports = function (board, playerColor) {
 
-    board[0].map((row, columnIndex) => board
+    let result = board[0].map((row, columnIndex) => board
         .map(rows => rows[columnIndex]))
         .map((cells, index) => ({index, cells}))
         .filter(({cells}) => cells[0] === "EMPTY")
@@ -18,6 +18,10 @@ module.exports = function (board, playerColor) {
                     other = true;
                     return false
                 }
-            ).length === 3;
+            ).length === 4;
         });
+
+    if (result) {
+        return result.index
+    }
 }
