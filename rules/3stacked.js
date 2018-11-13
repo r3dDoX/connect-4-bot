@@ -18,7 +18,7 @@ module.exports = function (board, playerColor) {
                     other = true;
                     return false
                 }
-            ).length === 4;
+            ).length === 3;
         });
 
     if (result) {
