@@ -93,4 +93,11 @@ playGame()
   .then(playGame)
   .then(playGame)
   .then(playGame)
-  .catch(console.error);
+  .then(() => {
+    console.log('finished');
+    process.exit(0);
+  })
+  .catch(error => {
+    console.error(error);
+    process.exit(1);
+  });

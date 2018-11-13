@@ -1,9 +1,11 @@
 const threeStacked = require('./3stacked');
-const threeInline = require('./3inline');
+const threeOtherPlayer = require('./3inline');
 const findFirstEmpty = require('./findFirstEmpty');
+const firstMoves = require('./firstMoves');
 
 module.exports = [
   threeStacked,
-  threeInline,
+  threeOtherPlayer,
+  firstMoves,
   findFirstEmpty,
 ];
